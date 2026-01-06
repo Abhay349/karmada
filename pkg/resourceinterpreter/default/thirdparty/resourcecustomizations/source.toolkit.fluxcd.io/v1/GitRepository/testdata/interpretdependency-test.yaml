@@ -1,0 +1,60 @@
+# test cases for interpreting dependency of GitRepository
+# case1: GitRepository with secretRef dependency
+# case2: GitRepository with certSecretRef only (not supported)
+# case3: GitRepository with both secretRef and certSecretRef
+
+name: "GitRepository with secretRef dependency"
+description: "Should return Secret dependency from spec.secretRef"
+desiredObj:
+  apiVersion: source.toolkit.fluxcd.io/v1
+  kind: GitRepository
+  metadata:
+    name: sample
+    namespace: test-gitrepository
+  spec:
+    secretRef:
+      name: git-secret
+operation: InterpretDependency
+output:
+  dependencies:
+    - apiVersion: v1
+      kind: Secret
+      name: git-secret
+      namespace: test-gitrepository
+---
+name: "GitRepository with certSecretRef only"
+description: "certSecretRef is not interpreted by current logic"
+desiredObj:
+  apiVersion: source.toolkit.fluxcd.io/v1
+  kind: GitRepository
+  metadata:
+    name: sample
+    namespace: test-gitrepository
+  spec:
+    certSecretRef:
+      name: cert-secret
+operation: InterpretDependency
+output:
+  dependencies: []
+---
+name: "GitRepository with secretRef and certSecretRef"
+description: "Only secretRef should be returned"
+desiredObj:
+  apiVersion: source.toolkit.fluxcd.io/v1
+  kind: GitRepository
+  metadata:
+    name: sample
+    namespace: test-gitrepository
+  spec:
+    secretRef:
+      name: git-secret
+    certSecretRef:
+      name: cert-secret
+operation: InterpretDependency
+output:
+  dependencies:
+    - apiVersion: v1
+      kind: Secret
+      name: git-secret
+      namespace: test-gitrepository
+      
